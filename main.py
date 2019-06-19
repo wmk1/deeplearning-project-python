@@ -1,5 +1,18 @@
+import pandas as pd
 
+from util import DataTranslators
 #Removing noisy words from text
+
+#Load data from csv
+
+datafile = pd.read_csv('test_tweets.csv')
+
+for index, row in datafile.iterrows():
+    print(row[DataTranslators.ca.name])
+
+df.describe()
+df.info()
+
 noise_list = ["is", "a", "this", "..."]
 def _remove_noise(input_text):
     words = input_text.split()
