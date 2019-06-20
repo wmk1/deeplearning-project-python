@@ -4,7 +4,7 @@ doc3 = "Doctors suggest that driving may cause increased stress and blood pressu
 doc_complete = [doc1, doc2, doc3]
 doc_clean = [doc.split() for doc in doc_complete]
 
-import gensim from gensim
+import gensim
 import corpora
 
 # Creating the term dictionary of our corpus, where every unique term is assigned an index.
