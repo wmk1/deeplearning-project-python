@@ -1,12 +1,13 @@
 import pandas as pd
 from textblob.classifiers import NaiveBayesClassifier as NBC
-
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import classification_report
+from sklearn import svm
 #Removing noisy words from text
 
 
 def remove_noise(input_text):
-    dirty_words = ["is", "a", "on", "i", "and", "or", "to"]
+    dirty_words = ["is", "a", "on", "i", "and", "or", "to", "ate", "something", "the", "how", "my", "at"]
     words = input_text[1].split(" ")
     noise_free_words = [word for word in words if word not in dirty_words]
     noise_free_text = " ".join(noise_free_words)
@@ -48,5 +49,9 @@ print(df)
 
 
 #Vectorization
+tfdid = TfidfVectorizer(max_features = 1000, lowercase=True, analyzer='word',
+                                 stop_words='english',ngram_range=(1,1))
+train_vect = tfdid.fit_transform((df['tweet']))
 
-
+train_vect
+print(train_vect)
