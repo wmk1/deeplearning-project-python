@@ -1,7 +1,7 @@
 import pandas as pd
 from nltk import WordNetLemmatizer
 import classification
-from textblob.classifiers import NaiveBayesClassifier as NBC
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from sklearn import svm
@@ -9,7 +9,7 @@ lem = WordNetLemmatizer()
 
 
 class classification():
-    def classification_text(self, ):
+    def classification_text(traindf, df):
         training_corpus = [
         ('They are bitches and whores', 'Hate'),
         ("Stupid cunt and piece of fucking shit", 'Hate'),
@@ -31,14 +31,14 @@ class classification():
         train_data = []
         train_labels = []
         for row in training_corpus:
-        train_data.append(row[0])
-        train_labels.append(row[1])
+            train_data.append(row[0])
+            train_labels.append(row[1])
 
         test_data = []
         test_labels = []
         for row in test_corpus:
-        test_data.append(row[0])
-        test_labels.append(row[1])
+            test_data.append(row[0])
+            test_labels.append(row[1])
 
         # Create feature vectors
         vectorizer = TfidfVectorizer(min_df=4, max_df=0.9)
