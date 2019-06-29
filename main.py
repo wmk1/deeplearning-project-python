@@ -1,19 +1,15 @@
+import string
+
 import pandas as pd
 from nltk import WordNetLemmatizer
-from classification import classification
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn import svm, model_selection, metrics, preprocessing, linear_model, ensemble
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import classification_report
-from sklearn import svm
 lem = WordNetLemmatizer()
-
 from nltk.stem.porter import PorterStemmer
 stem = PorterStemmer()
 
-word = "multiplying"
 #Removing noisy words from text
-
-
 def remove_noise(input_text):
     dirty_words = ["is", "a", "on", "i", "and", "or", "to", "ate", "something", "the", "how", "my", "at"]
     words = input_text[1].split(" ")
@@ -28,27 +24,33 @@ def remove_noise_train(input_text):
     noise_free_text = " ".join(noise_free_words)
     return noise_free_text
 
-
-
 #Load data from csv
-
 df = pd.read_csv('test_tweets.csv')
 traindf = pd.read_csv('train_test_tweets.csv')
 df.describe()
+print("Data before lemmatizing")
 print(df)
+df.values.reshape(34394,)
 #Lemmatize
 df['tweet'] = df.apply(remove_noise, axis=1)
+traindf.values.reshape(95886)
 traindf['tweet'] = traindf.apply(remove_noise_train, axis=1)
 print("after removing noise")
 print(df)
+
+##Not working here
 #model = NBC(df[1])
 
+
+#Validation set
+train_x, valid_x, train_y, valid_y = model_selection.train_test_split(df['id'], traindf['tweet'])
 
 #Vectorization
 tfdid = TfidfVectorizer(max_features = 50000, lowercase=True, analyzer='word',
                                  stop_words='english',ngram_range=(1,1))
 train_vect = tfdid.fit_transform((df['tweet']))
 print(train_vect)
+
 
 #Classification
 def classification_text(traindf, df):
@@ -62,13 +64,19 @@ def classification_text(traindf, df):
         ('I feel very good about these dates.', 'Love'),
         ('This is joy', 'Love'),
         ("Pure happiness", 'Love'),
-        ('Donald trump fucks nazi hitler in the ass', 'Hate')]
+        ('Donald trump fucks nazi hitler in the ass', 'Hate'),
+        ('She is fucking nuts', 'Hate'),
+        ('I really hate this fuckwad', 'Hate'),
+        ('These puppies are beloved', 'Love')]
     test_corpus = [
         ('Comparison is straightforward = you are shit', 'Hate'),
+        ('I really hate this fuckwad', 'Hate'),
         ('I feel brilliant!', 'Love'),
+        ('I know this guy and I really like it', 'Love'),
         ('Gary is a friend of mine.', 'Love'),
+        ('Fuck you', 'Hate'),
         ("I hope you die", 'Hate'),
-        ('The date was good.', 'Class_A'),
+        ('The date was good.', 'Love'),
         ('I do not enjoy my job', 'Hate')]
     train_data = []
     train_labels = []
@@ -92,6 +100,44 @@ def classification_text(traindf, df):
     # Perform classification with SVM, kernel=linear
     model = svm.SVC(kernel='linear')
     model.fit(train_vectors, train_labels)
+    #TF-IDF
     prediction = model.predict(test_vectors)
     print(prediction)
+
+
+
+#Preprocessing
+encoder = preprocessing.Encoder()
+train_y = encoder.fit_transform(train_y)
+valid_y = encoder.fit_transform(valid_y)
+
+#Count vector
+
+count_vect = CountVectorizer(analyzer = 'word', token_pattern=r'\w{1,}')
+count_vect.fit(traindf['tweet'])
+
+xtrain_count = count_vect.transform(train_x)
+xvalid_count = count_vect.transform(valid_x)
+
+
+def train_model_bayes(classifier, feature_vector_train, label, feature_vector_valid, is_neural_net=False):
+    classifier.fit(feature_vector_train, label)
+
+    #Predict labels on validation dataset
+    predictions = classifier.predict(feature_vector_valid)
+
+    if is_neural_net:
+        predictions = predictions.argmax(axis=-1)
+
+    return metrics.accuracy_score(predictions, valid_y)
+
+traindf['word_count'] = traindf['tweet'].apply(lambda x: len(x.split()))
+traindf['punctuation_count'] = traindf['tweet'].apply(lambda x: len("".join(_ for _ in x if _ is string.punctuation)))
+
+accuracy = train_model_bayes(linear_model.LogisticRegression(), xtrain_count, train_y, xvalid_count)
+print('accuracy', accuracy)
+accuracy_random_forest = train_model_bayes(ensemble.RandomForestClassifier(), train_vect, train_y, xvalid_count)
+print('classificator random forest', accuracy_random_forest)
+
+
 
