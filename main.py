@@ -13,14 +13,14 @@ stem = PorterStemmer()
 def remove_noise(input_text):
     dirty_words = ["is", "a", "on", "i", "and", "or", "to", "ate", "something", "the", "how", "my", "at"]
     words = input_text[1].split(" ")
-    noise_free_words = [lem.lemmatize(word, 'v') for word in words if word not in dirty_words]
+    noise_free_words = [str (lem.lemmatize(str(word), 'v')) for word in words if word not in dirty_words]
     noise_free_text = " ".join(noise_free_words)
     return noise_free_text
 
 def remove_noise_train(input_text):
     dirty_words = ["is", "a", "on", "i", "and", "or", "to", "ate", "something", "the", "how", "my", "at"]
     words = input_text[2].split(" ")
-    noise_free_words = [word for word in words if word not in dirty_words]
+    noise_free_words = [str (lem.lemmatize(str(word), 'v')) for word in words if word not in dirty_words]
     noise_free_text = " ".join(noise_free_words)
     return noise_free_text
 
@@ -41,6 +41,19 @@ print(df)
 
 ##Not working here
 #model = NBC(df[1])
+
+#Regexp in text classify hate/love
+hate_words = ['fuck', 'suck', 'bitch', 'whore', 'pussy', 'dick', 'nazi', 'hitler','cunt',  ]
+
+def _lookup_words(input_text):
+    words = input_text.split()
+    new_words = []
+    for word in words:
+        if word.lower() in hate_words:
+            word = hate_words[word.lower()]
+        new_words.append(word)
+        new_text = " ".join(new_words)
+        return new_text
 
 
 #Validation set
@@ -113,10 +126,12 @@ train_y = encoder.fit_transform(train_y)
 valid_y = encoder.fit_transform(valid_y)
 
 #Count vector
-
+print(traindf['tweet'])
 count_vect = CountVectorizer(analyzer = 'word', token_pattern=r'\w{1,}')
 count_vect.fit(traindf['tweet'])
 
+
+print(count_vect)
 xtrain_count = count_vect.transform(train_x)
 xvalid_count = count_vect.transform(valid_x)
 
