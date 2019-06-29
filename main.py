@@ -27,13 +27,12 @@ def remove_noise_train(input_text):
 #Load data from csv
 df = pd.read_csv('test_tweets.csv')
 traindf = pd.read_csv('train_test_tweets.csv')
+traindf.dropna(inplace=True)
 df.describe()
 print("Data before lemmatizing")
 print(df)
-df.values.reshape(34394,)
 #Lemmatize
 df['tweet'] = df.apply(remove_noise, axis=1)
-traindf.values.reshape(95886)
 traindf['tweet'] = traindf.apply(remove_noise_train, axis=1)
 print("after removing noise")
 print(df)
@@ -43,10 +42,10 @@ print(df)
 
 
 #Validation set
-train_x, valid_x, train_y, valid_y = model_selection.train_test_split(df['id'], traindf['tweet'])
+train_x, valid_x, train_y, valid_y = model_selection.train_test_split(traindf['id'], traindf['tweet'])
 
 #Vectorization
-tfdid = TfidfVectorizer(max_features = 50000, lowercase=True, analyzer='word',
+tfdid = TfidfVectorizer(max_features = 5000, lowercase=True, analyzer='word',
                                  stop_words='english',ngram_range=(1,1))
 train_vect = tfdid.fit_transform((df['tweet']))
 print(train_vect)
@@ -134,6 +133,8 @@ def train_model_bayes(classifier, feature_vector_train, label, feature_vector_va
 traindf['word_count'] = traindf['tweet'].apply(lambda x: len(x.split()))
 traindf['punctuation_count'] = traindf['tweet'].apply(lambda x: len("".join(_ for _ in x if _ is string.punctuation)))
 
+
+#Two classificators
 accuracy = train_model_bayes(linear_model.LogisticRegression(), xtrain_count, train_y, xvalid_count)
 print('accuracy', accuracy)
 accuracy_random_forest = train_model_bayes(ensemble.RandomForestClassifier(), train_vect, train_y, xvalid_count)
